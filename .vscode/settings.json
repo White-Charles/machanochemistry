@@ -1,0 +1,8 @@
+{
+    "python.analysis.extraPaths": [
+        "/home/zwbai/work/ML/ocp/",
+        "/home/zwbai/work/ML/ase_model/",
+        "/home/zwbai/soft/conda/envs/ase_model",
+        "./ase_model"
+    ]
+}
