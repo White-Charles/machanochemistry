@@ -54,7 +54,7 @@ from .neb import(
     get_dist_list,
     interpolate_plot,
     copy_files_skip_existing,
-    creat_neb,
+    create_neb,
     NebProcess,
     plot_mep,
     CalculationChecker,
@@ -99,8 +99,14 @@ from .alloy import (
 
 from .other import (
     del_file,
-    creat_folder,
+    create_folder,
     exist_folder,
     cal_d,
     recreate_folder,
+)
+
+from .lammps_pro import (
+    get_alloy_slab,
+    get_strain_alloy_slabs,
+
 )

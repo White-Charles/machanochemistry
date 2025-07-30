@@ -7,7 +7,7 @@ def recreate_folder(folder_path):
         shutil.rmtree(folder_path)  # 如果文件夹存在，则递归删除
     os.makedirs(folder_path)  # 创建空文件夹
 
-def creat_folder(folder_path, is_delete=False):
+def create_folder(folder_path, is_delete=False):
     if os.path.exists(folder_path):
         # 如果文件夹存在，则删除文件夹及其内部文件
         if is_delete:
