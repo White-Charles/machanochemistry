@@ -4,13 +4,14 @@ import numpy as np
 from pathlib import Path
 from os.path import join
 import matplotlib.pyplot as plt
-from ase.geometry import get_distances
 from scipy.interpolate import CubicSpline, CubicHermiteSpline
 from .other import create_folder, exist_folder
 from .dealcar import read_cars, read_one_car, out_car_list, read_car
 
 import ase
+from ase.io import read
 from ase.optimize import BFGS
+from ase.geometry import get_distances
 from ase.calculators.emt import EMT
 from ase.neb import NEB, NEBTools, NEBOptimizer
 from ase.utils.forcecurve import fit_images
@@ -539,3 +540,163 @@ def interpolate_band(atom_configs, transition_state=None):
         band = NEB(atom_configs)
         band.interpolate("idpp")
     return atom_configs
+
+def generate_dimer_poscar(frep_path, out_path, fix_model):
+    """
+    Generate POSCAR for improved dimer calculations from frequency calculations.
+
+    Parameters:
+    -----------
+    initial_poscar : str, optional
+        Path to the initial POSCAR file (before frequency calculations).
+        Default: 'POSCAR_relax'
+    outcar : str, optional
+        Path to the OUTCAR file from frequency calculations.
+        Default: 'OUTCAR'
+    output_file : str, optional
+        Name of the output POSCAR file for dimer calculations.
+        Default: 'POSCAR_dimer'
+
+    Returns:
+    --------
+    None
+        Writes output to file and prints status messages.
+
+    Raises:
+    -------
+    FileNotFoundError
+        If input files are not found.
+    ValueError
+        If frequency data is not found in OUTCAR (check NWRITE=3 setting).
+
+    Example:
+    --------
+    >>> generate_dimer_poscar('POSCAR_opt', 'OUTCAR_freq', 'POSCAR_dimer')
+    """
+
+    # Validate input files
+
+    initial_poscar = join(frep_path, 'CONTCAR')
+    outcar= join(frep_path, 'OUTCAR')
+    output_poscar = join(out_path, 'POSCAR')
+
+    create_folder(out_path, is_delete=False)
+
+    if not os.path.exists(initial_poscar):
+        raise FileNotFoundError(f"Initial POSCAR file not found: {initial_poscar}")
+    if not os.path.exists(outcar):
+        raise FileNotFoundError(f"OUTCAR file not found: {outcar}")
+
+    try:
+        # Read initial structure and write base POSCAR
+        model = read(initial_poscar)
+        model = fix_model(model)
+        model.write(output_poscar, vasp5=True)
+    except Exception as e:
+        raise ValueError(f"Error reading/writing POSCAR files: {str(e)}")
+
+    # Find frequency data in OUTCAR
+    l_start = 0
+    try:
+        with open(outcar) as f_in:
+            lines = f_in.readlines()
+            for num, line in enumerate(lines):
+                if 'Eigenvectors after division by SQRT(mass)' in line:
+                    l_start = num
+    except Exception as e:
+        raise ValueError(f"Error reading OUTCAR: {str(e)}")
+
+    if l_start == 0:
+        raise ValueError(
+            "Frequency data not found in OUTCAR.\n"
+            "Please check your frequency calculations and ensure NWRITE=3 is set."
+        )
+
+    # Process frequency information
+    freq_infor_block = lines[l_start:]
+    l_position = 0
+    wave_num = 0.0
+
+    for num, line in enumerate(freq_infor_block):
+        if 'f/i' in line:
+            try:
+                wave_tem = float(line.rstrip().split()[6])
+                if wave_tem > wave_num:
+                    wave_num = wave_tem
+                    l_position = num + 2
+            except (IndexError, ValueError):
+                continue
+
+    # Append vibration mode to POSCAR
+    try:
+        with open(output_poscar, 'a') as pos_dimer:
+            pos_dimer.write('  ! Dimer Axis Block\n')
+
+            vib_lines = freq_infor_block[l_position:l_position + len(model)]
+            for line in vib_lines:
+                infor = line.rstrip().split()[3:]
+                pos_dimer.write(' '.join(infor) + '\n')
+    except Exception as e:
+        raise IOError(f"Error writing to output file: {str(e)}")
+
+    print(
+        f"\nDONE!\n"
+        f"Output file created: {output_poscar}\n"
+        f"This can be used for dimer calculations.\n"
+        f"Remember to rename it to POSCAR before running dimer jobs.\n"
+        f"Highest frequency mode included: {wave_num:.2f} cm^-1"
+    )
+    return(model)
+
+def concatenate_files(outpath):
+    '''
+    Concatenate the contents of CONTCAR and OUTCAR files into a single output file for frequency analysis.
+    '''
+    contcar_file = join(outpath, 'CONTCAR')
+    outcar_file = join(outpath, 'OUTCAR')
+    output_file = join(outpath, 'OUTCAR.out')
+    # 读取短文件内容
+    with open(contcar_file, 'r') as f_short:
+        lines = f_short.readlines()
+
+    # 查找"Selective dynamics"行的位置
+    selective_idx = None
+    for i, line in enumerate(lines):
+        if "Selective dynamics" in line:
+            selective_idx = i
+            break
+
+    if selective_idx is None:
+        raise ValueError("未找到'Selective dynamics'行")
+
+    # 获取上一行（数字行）
+    if selective_idx < 1:
+        raise ValueError("'Selective dynamics'行前没有数字行")
+
+    numbers_line = lines[selective_idx - 1].split()
+
+    try:
+        # 将数字行中的所有数字求和
+        total_lines = sum(int(num) for num in numbers_line)
+    except ValueError:
+        raise ValueError("数字行包含非数字内容")
+
+    # 计算需要保留的行数（从文件开头到数字行后total_lines行）
+    start_idx = 0
+    end_idx = selective_idx + total_lines + 3  #
+
+    # 确保不超过文件长度
+    if end_idx > len(lines):
+        end_idx = len(lines)
+        print(f"警告: 文件行数不足，只保留到文件末尾")
+
+    # 读取长文件内容
+    with open(outcar_file, 'r') as f_long:
+        long_content = f_long.read()
+
+    # 写入输出文件
+    with open(output_file, 'w') as f_out:
+        # 写入短文件的选定部分
+        f_out.writelines(lines[start_idx:end_idx])
+        # 写入长文件全部内容
+        f_out.write(long_content)

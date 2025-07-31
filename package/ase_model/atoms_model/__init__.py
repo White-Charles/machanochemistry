@@ -61,7 +61,8 @@ from .neb import(
     CalculationChecker,
     DBWriter,
     interpolate_band,
-
+    generate_dimer_poscar,
+    concatenate_files,
 )
 
 from .set_con import (
