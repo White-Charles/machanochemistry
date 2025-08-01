@@ -116,7 +116,7 @@ def read_lammps_onedata(path,  dump_fielname='result.dat', format='lammps-data',
     if format == 'lammps-data':
         result = read_lammps_result(path, dump_fielname=dump_fielname, style=style)
     elif format == 'lammps-dump-text':
-        result = read(join(path, dump_fielname))
+        result = read(join(path, dump_fielname), format='lammps-dump-text')
 
     # result.get
     symbols = set(result.get_chemical_symbols())

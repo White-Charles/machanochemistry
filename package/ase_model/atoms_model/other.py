@@ -1,6 +1,7 @@
 import os
 import shutil
 import numpy as np
+from send2trash import send2trash
 
 def recreate_folder(folder_path):
     if os.path.exists(folder_path):
@@ -12,7 +13,12 @@ def create_folder(folder_path, is_delete=False):
         # 如果文件夹存在，则删除文件夹及其内部文件
         if is_delete:
             print(is_delete)
-            shutil.rmtree(folder_path)
+            if os.path.exists(folder_path):
+                try:
+                    shutil.rmtree(folder_path)
+                except:
+                    send2trash(folder_path)
+                print(f"Folder {folder_path} already exists.")
             print(f"delete {folder_path}")
             exist_folder(folder_path, is_create=True)
         else:

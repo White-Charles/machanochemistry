@@ -5,6 +5,7 @@ atoms_model/alloy.py
 atoms_model/dealcar.py
 atoms_model/graph.py
 atoms_model/lammps_pro.py
+atoms_model/lammpsdata.py
 atoms_model/neb.py
 atoms_model/other.py
 atoms_model/plotmodel.py

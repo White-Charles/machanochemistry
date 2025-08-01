@@ -5,7 +5,7 @@ import shutil
 import collections
 import numpy as np
 import matplotlib.pyplot as plt
-
+from send2trash import send2trash
 from ase.atoms import Atoms
 # from vaspvis.dos import Dos
 # from vaspvis import standard
@@ -49,11 +49,17 @@ def get_nested_depth(obj):
     else:
         return 0
 
+
+
+
 def out_poscar(input, path="New_Folder", isp=False):
-    # 如果文件夹已经存在，则删除该文件夹及其中的内容
     if os.path.exists(path):
-        shutil.rmtree(path)
-    # 创建新的文件夹
+        try:
+            shutil.rmtree(path)
+        except:
+            send2trash(path)
+        print(f"Folder {path} already exists.")
+
     os.makedirs(path)
 
     if isinstance(input, dict):
@@ -90,7 +96,11 @@ def out_car_list(input, path="New_Folder", isp=False, out_format="vasp"):
     # 这个函数中嵌套了out_poscar，所以实际输出是嵌套文件夹
     # 如果文件夹已经存在，则删除该文件夹及其中的内容
     if os.path.exists(path):
-        shutil.rmtree(path)
+        try:
+            shutil.rmtree(path)
+        except:
+            send2trash(path)
+        print(f"Folder {path} already exists.")
     # 创建新的文件夹
     os.makedirs(path)
 

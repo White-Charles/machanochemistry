@@ -3,7 +3,7 @@ import math
 import shutil
 import numpy as np
 
-from lammps import lammps
+# from lammps import lammps
 from ase.atoms import Atoms
 from ase.build import add_vacuum
 from ase.calculators.emt import EMT
@@ -55,7 +55,7 @@ def cal_strain(ini_atoms, pre_atoms, isprint=False):
         print("strain: \n", E)
     return E
 
-def opt_strain(bulk, strain, iscal=False):
+def opt_strain(bulk, strain):
 
     # 在bulk上施加应变
     strain_bulk = bulk.copy()
@@ -72,16 +72,12 @@ def opt_strain(bulk, strain, iscal=False):
     strain_bulk.set_cell(newcell, scale_atoms=True)
     # scale_Atoms=True must be set to True to ensure that ...
     # ...the atomic coordinates adapt to changes in the lattice matrix
-    if iscal:
-        strain_real = extracted_from_opt_strain(
-            strain_bulk, lammps, cell, bulk
-        )
-    else:
-        strain_real = cal_strain(bulk, strain_bulk)
+
+    strain_real = cal_strain(bulk, strain_bulk)
     return (strain_bulk, strain_real)
 
 
-def opt_strain_F(bulk, strain, iscal=False):
+def opt_strain_F(bulk, strain):
 
     # 在bulk上施加应变
     strain_bulk = bulk.copy()
@@ -98,31 +94,26 @@ def opt_strain_F(bulk, strain, iscal=False):
     strain_bulk.set_cell(newcell, scale_atoms=True)
     # scale_Atoms=True must be set to True to ensure that ...
     # ...the atomic coordinates adapt to changes in the lattice matrix
-    if iscal:
-        strain_real = extracted_from_opt_strain(
-            strain_bulk, lammps, cell, bulk
-        )
-    else:
-        strain_real = cal_strain(bulk, strain_bulk)
+    strain_real = cal_strain(bulk, strain_bulk)
     return (strain_bulk, strain_real)
 
-def extracted_from_opt_strain(strain_bulk, lammps, cell, bulk):
-    # 施加应变后的模型，lammps可读文件
-    write("strain.lmp", strain_bulk, format="lammps-data")  # type: ignore
-    # 执行lammps优化，固定了x和y的自由度，只放松了z方向的自由度
-    infile = "in.strain.in"
-    lmp = lammps()
-    lmp.file(infile)
-    atoms = lammpsdata.read_lammps_data("opt_strain.data", style="atomic")
+# def extracted_from_opt_strain(strain_bulk, lammps, cell, bulk):
+#     # 施加应变后的模型，lammps可读文件
+#     write("strain.lmp", strain_bulk, format="lammps-data")  # type: ignore
+#     # 执行lammps优化，固定了x和y的自由度，只放松了z方向的自由度
+#     infile = "in.strain.in"
+#     lmp = lammps()
+#     lmp.file(infile)
+#     atoms = lammpsdata.read_lammps_data("opt_strain.data", style="atomic")
 
-    new_cell = atoms.get_cell()
-    dot_cell = np.dot(cell[0], cell[1])
-    dot_new = np.dot(new_cell[0], new_cell[1])
-    if dot_cell * dot_new < 0:  # 与基础的基矢量构型不同
-        new_cell[1] = new_cell[1] + new_cell[0]
+#     new_cell = atoms.get_cell()
+#     dot_cell = np.dot(cell[0], cell[1])
+#     dot_new = np.dot(new_cell[0], new_cell[1])
+#     if dot_cell * dot_new < 0:  # 与基础的基矢量构型不同
+#         new_cell[1] = new_cell[1] + new_cell[0]
 
-    strain_bulk.set_cell(new_cell, scale_atoms=True)
-    return cal_strain(bulk, strain_bulk)
+#     strain_bulk.set_cell(new_cell, scale_atoms=True)
+#     return cal_strain(bulk, strain_bulk)
 
 def cal_LBFGC(ini_model, potential=EMT, fmax=1e-6, steps=1e3):
     # 执行动力学过程，默认的势函数是EMT，力收敛判断值1E-6，最大动力学步数1E3

@@ -126,3 +126,7 @@ from .other import (
     cal_d,
     recreate_folder,
 )
+
+from .lammpsdata import(
+    write_lammps_data,
+)
