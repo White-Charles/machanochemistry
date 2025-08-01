@@ -1,4 +1,4 @@
-/media/zwbai/DATA/strain/PtORR\md\bulk\lammps.data (written by ASE) 
+./PtORR/md/bulk/lammps.data (written by ASE) 
 
 3072 	 atoms 
 1  atom types
@@ -6,8 +6,11 @@
 0.0      44.659732959999999  ylo yhi
 0.0      27.348389439999998  zlo zhi
 
+Masses 
 
-Atoms 
+  1     195.08 # Pt
+
+Atoms # charge 
 
      1   1   0.0                       0                       0                       0
      2   1   0.0      3.2230386227818597                       0      2.2790324305430087

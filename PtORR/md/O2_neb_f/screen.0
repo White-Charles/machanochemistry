@@ -1,0 +1,128 @@
+LAMMPS (29 Aug 2024)
+Processor partition = 0
+OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (src/src/comm.cpp:98)
+  using 1 OpenMP thread(s) per MPI task
+Reading data file ...
+  orthogonal box = (0 0 0) to (38.693948 44.679925 60)
+  1 by 1 by 1 MPI processor grid
+  reading atoms ...
+  3074 atoms
+  read_data CPU = 0.006 seconds
+WARNING: Changed valency_val to valency_boc for X (src/src/REAXFF/reaxff_ffield.cpp:294)
+768 atoms in group lower
+Switching to 'neigh_modify every 1 delay 0 check yes' setting during minimization
+Neighbor list info ...
+  update: every = 1 steps, delay = 0 steps, check = yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 10.6
+  ghost atom cutoff = 10.6
+  binsize = 5.3, bins = 8 9 12
+  2 neighbor lists, perpetual/occasional/extra = 2 0 0
+  (1) pair reaxff, perpetual
+      attributes: half, newton off, ghost
+      pair build: half/bin/ghost/newtoff
+      stencil: full/ghost/bin/3d
+      bin: standard
+  (2) fix qeq/reaxff, perpetual, copy from (1)
+      attributes: half, newton off
+      pair build: copy
+      stencil: none
+      bin: none
+Setting up quickmin style minimization ...
+  Unit style    : real
+  Current step  : 0
+Per MPI rank memory allocation (min/avg/max) = 196.5 | 196.5 | 196.5 Mbytes
+   Step          Temp          TotEng          Pxx        v_press_xx1    v_press_xx2        Pyy        v_press_yy1    v_press_yy2        Pzz        v_press_zz1    v_press_zz2  
+         0   0             -400554.08      79.584827     -1684.1454      79.584827      16.352805     -1700.0549      16.352805      88.353962      282.92893      88.353962    
+       100   0.25876109    -400558.94      51.495607     -1714.5874      51.495607      36.714437     -1708.8626      36.714437     -8.3684996      232.57368     -8.3684996    
+       200   0.12998195    -400561.6       44.101727     -1719.3681      44.101727      38.491807     -1707.4089      38.491807     -20.015951      219.58189     -20.015951    
+       234   0.068969175   -400562.35      42.63388      -1719.9368      42.63388       39.576108     -1707.2092      39.576108     -20.352682      219.6507      -20.352682    
+Loop time of 28.2415 on 1 procs for 234 steps with 3074 atoms
+
+100.0% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+Minimization stats:
+  Stopping criterion = energy tolerance
+  Energy initial, next-to-last, final = 
+     -400554.077866849  -400562.982771334  -400562.986289303
+  Force two-norm initial, final = 89.590423 7.899974
+  Force max component initial, final = 55.747541 3.5673968
+  Final line search alpha, max atom move = 0 0
+  Iterations, force evaluations = 234 234
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 23.924     | 23.924     | 23.924     |   0.0 | 84.71
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.0062011  | 0.0062011  | 0.0062011  |   0.0 |  0.02
+Output  | 0.62873    | 0.62873    | 0.62873    |   0.0 |  2.23
+Modify  | 3.3113     | 3.3113     | 3.3113     |   0.0 | 11.72
+Other   |            | 0.3717     |            |       |  1.32
+
+Nlocal:           3074 ave        3074 max        3074 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           6918 ave        6918 max        6918 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         500232 ave      500232 max      500232 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 500232
+Ave neighs/atom = 162.72999
+Neighbor list builds = 0
+Dangerous builds = 0
+Switching to 'neigh_modify every 1 delay 0 check yes' setting during minimization
+Setting up quickmin style minimization ...
+  Unit style    : real
+  Current step  : 234
+Per MPI rank memory allocation (min/avg/max) = 202.8 | 202.8 | 202.8 Mbytes
+   Step          Temp          TotEng          Pxx        v_press_xx1    v_press_xx2        Pyy        v_press_yy1    v_press_yy2        Pzz        v_press_zz1    v_press_zz2  
+       234   0             -400562.99      42.633865     -1720.0392      42.531462      39.57599      -1707.4503      39.404155     -20.35264       218.5275      -20.91362     
+       240   0.00011455096 -400562.99      42.528693     -1720.0398      42.528693      39.407737     -1707.4493      39.407737     -20.910476      218.53518     -20.910476    
+Loop time of 1.11562 on 1 procs for 6 steps with 3074 atoms
+
+100.0% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+Minimization stats:
+  Stopping criterion = energy tolerance
+  Energy initial, next-to-last, final = 
+     -400562.986288125  -400562.986555951  -400562.986686585
+  Force two-norm initial, final = 7.899875 7.8950978
+  Force max component initial, final = 3.5675531 3.5663392
+  Final line search alpha, max atom move = 0 0
+  Iterations, force evaluations = 6 6
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.73943    | 0.73943    | 0.73943    |   0.0 | 66.28
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.00018937 | 0.00018937 | 0.00018937 |   0.0 |  0.02
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0.097801   | 0.097801   | 0.097801   |   0.0 |  8.77
+Other   |            | 0.2782     |            |       | 24.94
+
+Nlocal:           3074 ave        3074 max        3074 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           6918 ave        6918 max        6918 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         500680 ave      500680 max      500680 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 500680
+Ave neighs/atom = 162.87573
+Neighbor list builds = 0
+Dangerous builds = 0
+NEB calculation complete
+
+CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE
+
+Your simulation uses code contributions which should be cited:
+- Type Label Framework: https://doi.org/10.1021/acs.jpcb.3c08419
+- pair reaxff command: doi:10.1016/j.parco.2011.08.005
+- fix qeq/reaxff command: doi:10.1016/j.parco.2011.08.005
+The log file lists these citations in BibTeX format.
+
+CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE
+
+Total wall time: 0:00:30

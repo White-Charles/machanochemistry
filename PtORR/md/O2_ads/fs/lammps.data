@@ -1,4 +1,4 @@
-/media/zwbai/DATA/strain/PtORR\md\O2_ads\fs\lammps.data (written by ASE) 
+././PtORR/md/O2_ads/fs/lammps.data (written by ASE) 
 
 3074 	 atoms 
 2  atom types
@@ -6,8 +6,12 @@
 0.0      44.679925159782847  ylo yhi
 0.0                      60  zlo zhi
 
+Masses 
 
-Atoms 
+  1      16.00 # O
+  2     195.08 # Pt
+
+Atoms # charge 
 
      1   2   0.0                       0                       0                       0
      2   2   0.0      3.2244957159667389                       0      2.2789956727095206
