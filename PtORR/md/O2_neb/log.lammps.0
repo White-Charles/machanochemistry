@@ -1,0 +1,250 @@
+LAMMPS (29 Aug 2024)
+Processor partition = 0
+OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (src/src/comm.cpp:98)
+  using 1 OpenMP thread(s) per MPI task
+# The LAMMPS input script is designed to perform a Nudged Elastic Band (NEB)
+# calculation of the platinum-oxygen (Pt-O₂) dissociation process.
+# Zhiwen Bai, 6.2025
+# On the basis of the original script by lammps neb example:
+# nudged elastic band (NEB) calculation for barrier finding
+# To get the stress and strain field of the system.
+
+# Pt O system
+
+#---------------------- Basic settings ----------------------
+
+units		    real
+boundary        p p p
+atom_style	    charge # q
+dimension       3
+neighbor        0.6 bin
+neigh_modify    delay 5
+variable        u uloop 20  # for neb output, it should exceed the number of images.
+atom_modify     map array sort 0 0.0 # for neb
+#------------------- Read the initial state ------------------
+
+read_data       ./refer/lammps.data
+Reading data file ...
+  orthogonal box = (0 0 0) to (38.693948 44.679925 60)
+  1 by 1 by 1 MPI processor grid
+  reading atoms ...
+  3074 atoms
+  read_data CPU = 0.008 seconds
+
+# ------------------  Potential function ---------------------
+pair_style	    reaxff NULL
+pair_coeff	    * * CHONiPt.ff O Pt
+WARNING: Changed valency_val to valency_boc for X (src/src/REAXFF/reaxff_ffield.cpp:294)
+# This file was provided by B.V. Merinov, J.E. Mueller, A.C.T. van Duin, Qi An, and W.A. on 2014, 5
+# Goddard III ReaxFF Reactive Force-Field Modeling of the Triple-Phase Boundary in a Solid Oxide Fuel Cell
+# J. Phys. Chem. Lett., 2014, 5 (22), pp 4039-4043
+# DOI: 10.1021/jz501891y
+
+#------------------------ Output ------------------------------
+shell           mkdir results
+shell           cd results
+
+compute         peratom all stress/atom NULL
+compute         v all voronoi/atom
+
+variable        stress_xx atom -c_peratom[1]/c_v[1]
+variable        stress_yy atom -c_peratom[2]/c_v[1]
+variable        stress_zz atom -c_peratom[3]/c_v[1]
+variable        stress_xy atom -c_peratom[4]/c_v[1]
+variable        stress_xz atom -c_peratom[5]/c_v[1]
+variable        stress_yz atom -c_peratom[6]/c_v[1]
+
+compute         press_xx1 all reduce sum v_stress_xx
+variable        press_xx1 equal c_press_xx1/atoms
+compute         press_yy1 all reduce sum v_stress_yy
+variable        press_yy1 equal c_press_yy1/atoms
+compute         press_zz1 all reduce sum v_stress_zz
+variable        press_zz1 equal c_press_zz1/atoms
+
+compute         p all reduce sum c_peratom[1] c_peratom[2] c_peratom[3]
+variable        press_xx2 equal -c_p[1]/vol
+variable        press_yy2 equal -c_p[2]/vol
+variable        press_zz2 equal -c_p[3]/vol
+
+dump            atom_snap all atom 100 dump.neb.$u.text
+dump            atom_snap all atom 100 dump.neb.1.text
+dump            forece_snap all custom 100 dump.force.$u.xyz id type x y z c_peratom[1] c_peratom[2] c_peratom[3] c_peratom[4] c_peratom[5] c_peratom[6] # 原子力
+dump            forece_snap all custom 100 dump.force.1.xyz id type x y z c_peratom[1] c_peratom[2] c_peratom[3] c_peratom[4] c_peratom[5] c_peratom[6] 
+dump            stress_snap all custom 100 dump.stress.$u.xyz id type x y z v_stress_xx v_stress_yy v_stress_zz v_stress_xy v_stress_xz v_stress_yz # 原子应力
+dump            stress_snap all custom 100 dump.stress.1.xyz id type x y z v_stress_xx v_stress_yy v_stress_zz v_stress_xy v_stress_xz v_stress_yz 
+
+# ------------------ Printing thermodynamic --------------------
+thermo_style    custom step temp etotal pxx v_press_xx1 v_press_xx2 pyy v_press_yy1 v_press_yy2 pzz v_press_zz1 v_press_zz2
+thermo          100
+
+#---------------------- Neb calculation ------------------------
+
+region          lower block INF INF INF INF INF 5 units box
+group           lower region lower
+768 atoms in group lower
+
+reset_timestep  0
+fix             1 all qeq/reaxff 1 0.0 10.0 1.0e-6 reaxff
+fix             2 lower setforce 0.0 0.0 0.0 # fix the boundary
+
+variable        k_spring equal 1.0
+
+timestep        0.2
+min_style       quickmin
+fix             3 all neb ${k_spring}
+fix             3 all neb 1
+neb             1E-9 5.0 5000 5000 100 each ../refer/lammps.$u.data
+neb             1E-9 5.0 5000 5000 100 each ../refer/lammps.1.data
+Switching to 'neigh_modify every 1 delay 0 check yes' setting during minimization
+Neighbor list info ...
+  update: every = 1 steps, delay = 0 steps, check = yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 10.6
+  ghost atom cutoff = 10.6
+  binsize = 5.3, bins = 8 9 12
+  2 neighbor lists, perpetual/occasional/extra = 2 0 0
+  (1) pair reaxff, perpetual
+      attributes: half, newton off, ghost
+      pair build: half/bin/ghost/newtoff
+      stencil: full/ghost/bin/3d
+      bin: standard
+  (2) fix qeq/reaxff, perpetual, copy from (1)
+      attributes: half, newton off
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 196.5 | 196.5 | 196.5 Mbytes
+   Step          Temp          TotEng          Pxx        v_press_xx1    v_press_xx2        Pyy        v_press_yy1    v_press_yy2        Pzz        v_press_zz1    v_press_zz2  
+         0   0             -400575         31.464242     -1729.689       31.464242      2.9895241     -1634.3417      2.9895241      10.365229      446.06035      10.365229    
+       100   0.002226972   -400574.98      31.429594     -1729.7839      31.429594      5.1409414     -1633.7086      5.1409414      10.974976      446.55571      10.974976    
+       200   6.5029888e-06 -400575         31.389472     -1729.8889      31.389472      2.2156769     -1634.76        2.2156769      9.7781355      444.95134      9.7781355    
+       300   1.1588507e-05 -400575         31.340036     -1730.0091      31.340036      2.1672273     -1634.8728      2.1672273      9.5494816      444.45525      9.5494816    
+       400   5.5920347e-05 -400575         31.287057     -1730.1376      31.287057      2.3182615     -1634.9288      2.3182615      9.3736244      444.00283      9.3736244    
+       500   1.298223e-05  -400575         31.239753     -1730.2523      31.239753      2.0585251     -1635.1093      2.0585251      9.0803046      443.43981      9.0803046    
+       600   7.8900556e-06 -400575         31.193135     -1730.3648      31.193135      2.0190248     -1635.2153      2.0190248      8.8677417      442.97447      8.8677417    
+       700   6.0471952e-06 -400575         31.146428     -1730.4765      31.146428      1.9789992     -1635.3209      1.9789992      8.6553628      442.51059      8.6553628    
+       741   0.00015305697 -400575         31.128353     -1730.5208      31.128353      1.5530763     -1635.4982      1.5530763      8.4300043      442.16321      8.4300043    
+Loop time of 90.7724 on 1 procs for 741 steps with 3074 atoms
+
+99.9% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+Minimization stats:
+  Stopping criterion = energy tolerance
+  Energy initial, next-to-last, final = 
+     -400575.002128222  -400575.002604787  -400575.002613151
+  Force two-norm initial, final = 1.1274284 0.56321024
+  Force max component initial, final = 0.67435067 0.38615983
+  Final line search alpha, max atom move = 0 0
+  Iterations, force evaluations = 741 741
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 77.627     | 77.627     | 77.627     |   0.0 | 85.52
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.018961   | 0.018961   | 0.018961   |   0.0 |  0.02
+Output  | 2.0333     | 2.0333     | 2.0333     |   0.0 |  2.24
+Modify  | 10.717     | 10.717     | 10.717     |   0.0 | 11.81
+Other   |            | 0.3767     |            |       |  0.41
+
+Nlocal:           3074 ave        3074 max        3074 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           6918 ave        6918 max        6918 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         500659 ave      500659 max      500659 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 500659
+Ave neighs/atom = 162.8689
+Neighbor list builds = 0
+Dangerous builds = 0
+Switching to 'neigh_modify every 1 delay 0 check yes' setting during minimization
+Per MPI rank memory allocation (min/avg/max) = 202.8 | 202.8 | 202.8 Mbytes
+   Step          Temp          TotEng          Pxx        v_press_xx1    v_press_xx2        Pyy        v_press_yy1    v_press_yy2        Pzz        v_press_zz1    v_press_zz2  
+       741   0             -400575         31.128088     -1730.5207      31.128085      1.5534763     -1635.4985      1.5520521      8.4292097      442.16167      8.4287844    
+       800   5.7358186e-06 -400575         31.115337     -1730.5511      31.115337      1.9406843     -1635.3952      1.9406843      8.5100275      442.19675      8.5100275    
+       900   5.4679124e-06 -400575         31.070448     -1730.6582      31.070448      1.8909689     -1635.5002      1.8909689      8.3029253      441.74819      8.3029253    
+      1000   7.5250662e-06 -400575         31.026972     -1730.7611      31.026972      1.8584484     -1635.5958      1.8584484      8.1088005      441.32237      8.1088005    
+      1012   0.0003832061  -400575         31.017676     -1730.7822      31.017676      2.9125879     -1635.2655      2.9125879      8.436427       441.66313      8.436427     
+Loop time of 33.5308 on 1 procs for 271 steps with 3074 atoms
+
+100.0% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+Minimization stats:
+  Stopping criterion = energy tolerance
+  Energy initial, next-to-last, final = 
+      -400575.00261444  -400575.002647355  -400575.002626023
+  Force two-norm initial, final = 0.56216951 1.4861485
+  Force max component initial, final = 0.3852269 1.0228455
+  Final line search alpha, max atom move = 0 0
+  Iterations, force evaluations = 271 271
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 28.419     | 28.419     | 28.419     |   0.0 | 84.75
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.0069102  | 0.0069102  | 0.0069102  |   0.0 |  0.02
+Output  | 0.85758    | 0.85758    | 0.85758    |   0.0 |  2.56
+Modify  | 3.8931     | 3.8931     | 3.8931     |   0.0 | 11.61
+Other   |            | 0.3542     |            |       |  1.06
+
+Nlocal:           3074 ave        3074 max        3074 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           6918 ave        6918 max        6918 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         500764 ave      500764 max      500764 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 500764
+Ave neighs/atom = 162.90306
+Neighbor list builds = 0
+Dangerous builds = 0
+
+shell           cd ..
+
+print           "NEB calculation complete"
+NEB calculation complete
+
+CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE
+
+Your simulation uses code contributions which should be cited:
+
+- Type Label Framework: https://doi.org/10.1021/acs.jpcb.3c08419
+
+@Article{Gissinger24,
+ author = {Jacob R. Gissinger, Ilia Nikiforov, Yaser Afshar, Brendon Waters, Moon-ki Choi, Daniel S. Karls, Alexander Stukowski, Wonpil Im, Hendrik Heinz, Axel Kohlmeyer, and Ellad B. Tadmor},
+ title = {Type Label Framework for Bonded Force Fields in LAMMPS},
+ journal = {J. Phys. Chem. B},
+ year =    2024,
+ volume =  128,
+ number =  13,
+ pages =   {3282–-3297}
+}
+
+- pair reaxff command: doi:10.1016/j.parco.2011.08.005
+
+@Article{Aktulga12,
+ author = {H. M. Aktulga and J. C. Fogarty and S. A. Pandit and A. Y. Grama},
+ title = {Parallel Reactive Molecular Dynamics: {N}umerical Methods and Algorithmic Techniques},
+ journal = {Parallel Computing},
+ year =    2012,
+ volume =  38,
+ number =  {4--5},
+ pages =   {245--259}
+}
+
+- fix qeq/reaxff command: doi:10.1016/j.parco.2011.08.005
+
+@Article{Aktulga12,
+ author = {H. M. Aktulga and J. C. Fogarty and S. A. Pandit and A. Y. Grama},
+ title = {Parallel Reactive Molecular Dynamics: {N}umerical Methods and Algorithmic Techniques},
+ journal = {Parallel Computing},
+ year =    2012,
+ volume =  38,
+ pages =   {245--259}
+}
+
+CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE
+
+Total wall time: 0:02:05

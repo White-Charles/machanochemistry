@@ -1,0 +1,31 @@
+YSTEM=Pt-Bulk calculation RELAX
+ISTART=0
+ICHARG=2
+ENCUT=550
+EDIFF = 1e-6   
+IBRION = 1
+NSW =200         
+EDIFFG =-0.01 
+ISIF = 3
+POTIM = 0.1
+ISMEAR = 1 
+SIGMA = 0.1
+PREC=H
+LREAL=.FALSE.
+ALGO= Fast
+NCORE = 8
+
+NWRITE = 0
+LWAVE = .FALSE.
+LCHARG = .FALSE.
+
+#ROPT = 2E-4 2E-4 2E-4
+# * Making the calculations faster
+#IALGO=48       # RMM-DIIS algorithm for electrons
+#NELMDL=-12
+#NSIM = 4      # blocked algorithm update, four bands at a time
+
+
+
+
+

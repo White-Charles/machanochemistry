@@ -1,0 +1,136 @@
+LAMMPS (29 Aug 2024)
+Processor partition = 1
+OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (src/src/comm.cpp:98)
+  using 1 OpenMP thread(s) per MPI task
+Reading data file ...
+  orthogonal box = (0 0 0) to (38.693948 44.679925 60)
+  1 by 1 by 1 MPI processor grid
+  reading atoms ...
+  3074 atoms
+  read_data CPU = 0.007 seconds
+WARNING: Changed valency_val to valency_boc for X (src/src/REAXFF/reaxff_ffield.cpp:294)
+768 atoms in group lower
+Switching to 'neigh_modify every 1 delay 0 check yes' setting during minimization
+Neighbor list info ...
+  update: every = 1 steps, delay = 0 steps, check = yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 10.6
+  ghost atom cutoff = 10.6
+  binsize = 5.3, bins = 8 9 12
+  2 neighbor lists, perpetual/occasional/extra = 2 0 0
+  (1) pair reaxff, perpetual
+      attributes: half, newton off, ghost
+      pair build: half/bin/ghost/newtoff
+      stencil: full/ghost/bin/3d
+      bin: standard
+  (2) fix qeq/reaxff, perpetual, copy from (1)
+      attributes: half, newton off
+      pair build: copy
+      stencil: none
+      bin: none
+Setting up quickmin style minimization ...
+  Unit style    : real
+  Current step  : 0
+Per MPI rank memory allocation (min/avg/max) = 196.5 | 196.5 | 196.5 Mbytes
+   Step          Temp          TotEng          Pxx        v_press_xx1    v_press_xx2        Pyy        v_press_yy1    v_press_yy2        Pzz        v_press_zz1    v_press_zz2  
+         0   0             -400503.59      4.4928626     -1710.7282      4.4928626     -5.9683686     -1653.8328     -5.9683686     -91.481901      379.85493     -91.481901    
+       100   8.2249254     -400463.83      35.260804     -1691.7358      35.260804      23.490544     -1628.0606      23.490544     -4.8697311      479.5384      -4.8697311    
+       200   0.81262161    -400554.1       48.076712     -1683.1181      48.076712      32.323574     -1629.0389      32.323574     -17.187138      384.39059     -17.187138    
+       300   0.301864      -400560.83      43.379186     -1706.4129      43.379186      26.740271     -1655.77        26.740271     -17.762833      391.00786     -17.762833    
+       400   0.067220767   -400563.57      42.918558     -1713.2822      42.918558      26.053069     -1655.221       26.053069     -7.3201017      412.38485     -7.3201017    
+       500   0.091421727   -400563.6       43.147961     -1716.5005      43.147961      26.86503      -1649.2167      26.86503       2.3744535      431.97096      2.3744535    
+       600   0.040133339   -400564.4       44.274035     -1717.0579      44.274035      28.798217     -1640.7364      28.798217      9.0227317      446.39331      9.0227317    
+       700   0.027285831   -400564.57      44.143894     -1719.6509      44.143894      30.9021       -1632.5787      30.9021        15.605322      459.35636      15.605322    
+       741   0.020267134   -400564.65      43.989574     -1720.8549      43.989574      31.898152     -1629.044       31.898152      18.286261      464.63425      18.286261    
+Loop time of 90.7723 on 1 procs for 741 steps with 3074 atoms
+
+99.9% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+Minimization stats:
+  Stopping criterion = energy tolerance
+  Energy initial, next-to-last, final = 
+     -400503.591689865  -400564.831093836  -400564.831270628
+  Force two-norm initial, final = 123.15719 5.4304542
+  Force max component initial, final = 76.771026 3.6553332
+  Final line search alpha, max atom move = 0 0
+  Iterations, force evaluations = 741 741
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 77.767     | 77.767     | 77.767     |   0.0 | 85.67
+Neigh   | 0.019406   | 0.019406   | 0.019406   |   0.0 |  0.02
+Comm    | 0.019175   | 0.019175   | 0.019175   |   0.0 |  0.02
+Output  | 2.063      | 2.063      | 2.063      |   0.0 |  2.27
+Modify  | 10.587     | 10.587     | 10.587     |   0.0 | 11.66
+Other   |            | 0.3161     |            |       |  0.35
+
+Nlocal:           3074 ave        3074 max        3074 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           6918 ave        6918 max        6918 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         500764 ave      500764 max      500764 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 500764
+Ave neighs/atom = 162.90306
+Neighbor list builds = 1
+Dangerous builds = 0
+Switching to 'neigh_modify every 1 delay 0 check yes' setting during minimization
+Setting up quickmin style minimization ...
+  Unit style    : real
+  Current step  : 741
+Per MPI rank memory allocation (min/avg/max) = 202.8 | 202.8 | 202.8 Mbytes
+   Step          Temp          TotEng          Pxx        v_press_xx1    v_press_xx2        Pyy        v_press_yy1    v_press_yy2        Pzz        v_press_zz1    v_press_zz2  
+       741   0             -400564.83      43.989421     -1720.9786      43.883183      31.898108     -1629.0873      31.86904       18.286259      464.42434      18.176131    
+       800   0.10515027    -400563.39      45.530575     -1719.1922      45.530575      30.750477     -1626.7851      30.750477      19.703692      467.59182      19.703692    
+       900   0.12802487    -400560.9       47.768303     -1717.0963      47.768303      41.58856      -1617.7927      41.58856       27.852178      484.05297      27.852178    
+      1000   0.18758106    -400558.9       45.506877     -1717.3875      45.506877      54.221472     -1610.1067      54.221472      28.179438      493.37833      28.179438    
+      1012   0.27999048    -400558.02      44.409901     -1718.2392      44.409901      55.658552     -1610.0181      55.658552      26.853757      492.95367      26.853757    
+Loop time of 33.5308 on 1 procs for 271 steps with 3074 atoms
+
+99.9% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+Minimization stats:
+  Stopping criterion = energy tolerance
+  Energy initial, next-to-last, final = 
+     -400564.831268305  -400560.584413954  -400560.584248588
+  Force two-norm initial, final = 17.660941 16.902925
+  Force max component initial, final = 12.023977 12.420509
+  Final line search alpha, max atom move = 0 0
+  Iterations, force evaluations = 271 271
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 28.434     | 28.434     | 28.434     |   0.0 | 84.80
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.0069807  | 0.0069807  | 0.0069807  |   0.0 |  0.02
+Output  | 0.85957    | 0.85957    | 0.85957    |   0.0 |  2.56
+Modify  | 3.8891     | 3.8891     | 3.8891     |   0.0 | 11.60
+Other   |            | 0.3407     |            |       |  1.02
+
+Nlocal:           3074 ave        3074 max        3074 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           6918 ave        6918 max        6918 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         500776 ave      500776 max      500776 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 500776
+Ave neighs/atom = 162.90696
+Neighbor list builds = 0
+Dangerous builds = 0
+NEB calculation complete
+
+CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE
+
+Your simulation uses code contributions which should be cited:
+- Type Label Framework: https://doi.org/10.1021/acs.jpcb.3c08419
+- pair reaxff command: doi:10.1016/j.parco.2011.08.005
+- fix qeq/reaxff command: doi:10.1016/j.parco.2011.08.005
+The log file lists these citations in BibTeX format.
+
+CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE
+
+Total wall time: 0:02:05

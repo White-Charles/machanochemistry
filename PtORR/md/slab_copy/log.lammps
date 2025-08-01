@@ -1,0 +1,256 @@
+LAMMPS (29 Aug 2024 - Update 1)
+OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (src/src/comm.cpp:98)
+  using 1 OpenMP thread(s) per MPI task
+package omp 2
+set 2 OpenMP thread(s) per MPI task
+using multi-threaded neighbor list subroutines
+# The LAMMPS input script is designed to optimize the slab structure.
+# Zhiwen Bai, 6.2025
+# Pt O H system
+
+#---------------------- Basic settings ----------------------
+
+units		    real
+boundary        p p p
+atom_style	    charge # q
+dimension       3
+neighbor        0.6 bin
+neigh_modify    delay 5
+
+
+#------------------- Read the initial state ------------------
+
+read_data       lammps.data
+Reading data file ...
+  orthogonal box = (0 0 0) to (38.675839 44.659013 60)
+  2 by 2 by 2 MPI processor grid
+  reading atoms ...
+  3072 atoms
+  read_data CPU = 0.010 seconds
+
+# ------------------  Potential function ---------------------
+pair_style	    reaxff NULL
+pair_coeff	    * * CHONiPt.ff Pt
+WARNING: Changed valency_val to valency_boc for X (src/src/REAXFF/reaxff_ffield.cpp:294)
+# This file was provided by B.V. Merinov, J.E. Mueller, A.C.T. van Duin, Qi An, and W.A. on 2014, 5
+# Goddard III ReaxFF Reactive Force-Field Modeling of the Triple-Phase Boundary in a Solid Oxide Fuel Cell
+# J. Phys. Chem. Lett., 2014, 5 (22), pp 4039-4043
+# DOI: 10.1021/jz501891y
+
+# ------------------------ Output ------------------------------
+shell           mkdir results
+shell           cd results
+
+compute         peratom all stress/atom NULL
+compute         v all voronoi/atom
+compute         sum_vol all reduce sum c_v[1]  # 总体积 = ∑(Voronoi_vol_i)
+
+variable        stress_xx atom -c_peratom[1]/c_v[1]
+variable        stress_yy atom -c_peratom[2]/c_v[1]
+variable        stress_zz atom -c_peratom[3]/c_v[1]
+variable        stress_xy atom -c_peratom[4]/c_v[1]
+variable        stress_xz atom -c_peratom[5]/c_v[1]
+variable        stress_yz atom -c_peratom[6]/c_v[1]
+
+compute         press_xx1 all reduce sum v_stress_xx
+variable        press_xx1 equal c_press_xx1/atoms
+compute         press_yy1 all reduce sum v_stress_yy
+variable        press_yy1 equal c_press_yy1/atoms
+compute         press_zz1 all reduce sum v_stress_zz
+variable        press_zz1 equal c_press_zz1/atoms
+
+compute         p all reduce sum c_peratom[1] c_peratom[2] c_peratom[3]
+variable        press_xx2 equal -c_p[1]/vol
+variable        press_yy2 equal -c_p[2]/vol
+variable        press_zz2 equal -c_p[3]/vol
+
+variable        press_xx3 equal -c_p[1]/c_sum_vol
+
+dump            atom_snap all atom 100 dump.neb.text
+dump            forece_snap all custom 100 dump.force.xyz id type x y z c_peratom[1] c_peratom[2] c_peratom[3] c_peratom[4] c_peratom[5] c_peratom[6] # 原子力
+dump            stress_snap all custom 100 dump.stress.xyz id type x y z v_stress_xx v_stress_yy v_stress_zz v_stress_xy v_stress_xz v_stress_yz # 原子应力
+
+# ------------------ Printing thermodynamic --------------------
+thermo_style    custom step temp etotal pxx v_press_xx1 v_press_xx2 v_press_xx3 pyy v_press_yy1 v_press_yy2 pzz v_press_zz1 v_press_zz2
+thermo          100
+# ------------------ Printing thermodynamic --------------------
+
+thermo          100
+
+dump            1 all xyz 100 dump.*.xyz
+dump_modify     1 element Pt
+#---------------------- Neb calculation ------------------------
+
+region          lower block INF INF INF INF INF 2.0 units box
+group           lower region lower
+256 atoms in group lower
+
+reset_timestep  0
+fix             2 all qeq/reaxff 1 0.0 10.0 1.0e-6 reaxff
+fix             3 lower setforce 0.0 0.0 0.0 # fix the boundary
+
+fix             1 all box/relax x 0.0 y 0.0
+minimize        1.0e-20 1.0e-20 10000 10000
+
+CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE
+
+Your simulation uses code contributions which should be cited:
+
+- Type Label Framework: https://doi.org/10.1021/acs.jpcb.3c08419
+
+@Article{Gissinger24,
+ author = {Jacob R. Gissinger, Ilia Nikiforov, Yaser Afshar, Brendon Waters, Moon-ki Choi, Daniel S. Karls, Alexander Stukowski, Wonpil Im, Hendrik Heinz, Axel Kohlmeyer, and Ellad B. Tadmor},
+ title = {Type Label Framework for Bonded Force Fields in LAMMPS},
+ journal = {J. Phys. Chem. B},
+ year =    2024,
+ volume =  128,
+ number =  13,
+ pages =   {3282–-3297}
+}
+
+- pair reaxff command: doi:10.1016/j.parco.2011.08.005
+
+@Article{Aktulga12,
+ author = {H. M. Aktulga and J. C. Fogarty and S. A. Pandit and A. Y. Grama},
+ title = {Parallel Reactive Molecular Dynamics: {N}umerical Methods and Algorithmic Techniques},
+ journal = {Parallel Computing},
+ year =    2012,
+ volume =  38,
+ number =  {4--5},
+ pages =   {245--259}
+}
+
+- pair reaxff/omp and fix qeq/reaxff/omp command: doi:10.1177/1094342017746221
+
+@Article{Aktulga17,
+ author =  {H. M. Aktulga and C. Knight and P. Coffman and
+    K. A. O'Hearn and T. R. Shan and W. Jiang},
+ title =   {Optimizing the Performance of Reactive Molecular Dynamics
+    Simulations for Multi-Core Architectures},
+ journal = {International Journal of High Performance Computing Applications},
+ year =    2018
+}
+
+CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE
+
+Switching to 'neigh_modify every 1 delay 0 check yes' setting during minimization
+Last active /omp style is pair_style reaxff/omp
+Neighbor list info ...
+  update: every = 1 steps, delay = 0 steps, check = yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 10.6
+  ghost atom cutoff = 10.6
+  binsize = 5.3, bins = 8 9 12
+  2 neighbor lists, perpetual/occasional/extra = 2 0 0
+  (1) pair reaxff/omp, perpetual
+      attributes: half, newton off, ghost, omp
+      pair build: half/bin/newtoff/ghost/omp
+      stencil: full/ghost/bin/3d
+      bin: standard
+  (2) fix qeq/reaxff/omp, perpetual, copy from (1)
+      attributes: half, newton off
+      pair build: copy
+      stencil: none
+      bin: none
+WARNING: Energy due to 3 extra global DOFs will be included in minimizer energies
+ (src/src/min.cpp:219)
+Per MPI rank memory allocation (min/avg/max) = 43.02 | 55.69 | 68.49 Mbytes
+   Step          Temp          TotEng          Pxx        v_press_xx1    v_press_xx2    v_press_xx3        Pyy        v_press_yy1    v_press_yy2        Pzz        v_press_zz1    v_press_zz2  
+         0   0             -400423.55      1293.4454      591.70132      1293.4454      1515.1645      1293.4461      591.7024       1293.4461      494.77354      1085.5097      494.77354    
+        55   0             -400424.86     -0.011281154   -1779.7957     -0.011281153   -0.01321494    -0.045261973   -1779.8601     -0.045261973   -3.2735269      436.55275     -3.2735269    
+Loop time of 6.96601 on 16 procs for 55 steps with 3072 atoms
+
+176.4% CPU use with 8 MPI tasks x 2 OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -400423.547432264  -400424.860786834  -400424.860786398
+  Force two-norm initial, final = 2764.6984 0.12369478
+  Force max component initial, final = 1954.8991 0.068440442
+  Final line search alpha, max atom move = 7.9200534e-07 5.4205195e-08
+  Iterations, force evaluations = 55 129
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 1.0816     | 2.5239     | 4.5906     |  89.5 | 36.23
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.072366   | 1.7732     | 3.4886     |  83.3 | 25.46
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 1.8634     | 1.8704     | 1.8843     |   0.5 | 26.85
+Other   |            | 0.7984     |            |       | 11.46
+
+Nlocal:            384 ave         816 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 2 2
+Nghost:         2252.5 ave        2444 max        2109 min
+Histogram: 4 0 0 0 0 0 0 2 0 2
+Neighs:          71393 ave      150748 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 2 2
+
+Total # of neighbors = 571144
+Ave neighs/atom = 185.91927
+Neighbor list builds = 0
+Dangerous builds = 0
+
+
+min_style       cg
+minimize        1.0e-15 1.0e-15 10000 10000
+Switching to 'neigh_modify every 1 delay 0 check yes' setting during minimization
+Last active /omp style is pair_style reaxff/omp
+WARNING: Energy due to 3 extra global DOFs will be included in minimizer energies
+ (src/src/min.cpp:219)
+Per MPI rank memory allocation (min/avg/max) = 47.04 | 61.13 | 75.25 Mbytes
+   Step          Temp          TotEng          Pxx        v_press_xx1    v_press_xx2    v_press_xx3        Pyy        v_press_yy1    v_press_yy2        Pzz        v_press_zz1    v_press_zz2  
+        55   0             -400424.86     -0.011281176   -1779.7957     -0.011281176   -0.013214966   -0.045261997   -1779.8601     -0.045261996   -3.2735269      436.55275     -3.2735269    
+        59   0             -400424.86     -0.022481248   -1779.7028     -0.022481248   -0.026334926   -0.086780001   -1779.8247     -0.086780001   -3.6336703      436.38985     -3.6336703    
+Loop time of 3.29218 on 16 procs for 4 steps with 3072 atoms
+
+176.1% CPU use with 8 MPI tasks x 2 OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -400424.860786784  -400424.860798499  -400424.860797004
+  Force two-norm initial, final = 0.12371364 0.14212335
+  Force max component initial, final = 0.068472526 0.13128112
+  Final line search alpha, max atom move = 3.7280635e-07 4.8942436e-08
+  Iterations, force evaluations = 4 57
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.5039     | 1.1104     | 1.819      |  56.3 | 33.73
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.14536    | 0.72623    | 1.3008     |  55.7 | 22.06
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 1.0825     | 1.0922     | 1.1015     |   0.6 | 33.18
+Other   |            | 0.3633     |            |       | 11.04
+
+Nlocal:            384 ave         781 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 4
+Nghost:         2252.5 ave        2407 max        2109 min
+Histogram: 4 0 0 0 0 0 0 0 0 4
+Neighs:        71427.4 ave      144331 max           0 min
+Histogram: 4 0 0 0 0 0 0 0 0 4
+
+Total # of neighbors = 571419
+Ave neighs/atom = 186.00879
+Neighbor list builds = 0
+Dangerous builds = 0
+
+#系统达到平衡后，输出系统的势能
+variable        E equal pe
+print           "E=$E"
+E=-400424.860797004
+
+write_data      ../result.dat
+System init for write_data ...
+Last active /omp style is pair_style reaxff/omp
+
+print "--------------------------"
+--------------------------
+
+print           "Structure optimization calculation complete"
+Structure optimization calculation complete
+Total wall time: 0:00:10
