@@ -8,7 +8,7 @@ import pandas as pd
 from ase import Atoms
 from os.path import join
 from ase.io import read
-from ase.io.lammpsdata import read_lammps_data, write_lammps_data
+from .lammpsdata import read_lammps_data, write_lammps_data
 from sympy import N
 from atoms_model import sort_z
 from pathlib import Path

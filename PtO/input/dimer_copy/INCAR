@@ -1,0 +1,29 @@
+SYSTEM =Pt111 O2 adsorption system 
+
+ISTART = 0
+ICHARG = 1
+GGA    = PE
+
+ENCUT  = 450
+EDIFF  = 1E-6
+ISMEAR = 0
+SIGMA  = 0.1
+ALGO   = Fast
+LREAL  = Auto
+ISYM = 0
+
+EDIFFG = -0.03
+IBRION = 44
+POTIM  = 0.2
+NSW    = 100
+
+LDIPOL = .TRUE.
+IDIPOL = 3
+
+LCHARG = .FALSE.
+LWAVE  = .FALSE.
+
+#VDW parameters:
+IVDW   = 11
+
+NCORE = 8

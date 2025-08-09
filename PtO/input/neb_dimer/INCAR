@@ -1,0 +1,34 @@
+SYSTEM = Pt-O2
+
+ISTART = 0
+ICHARG = 1
+GGA    = PE
+
+ENCUT  = 450
+EDIFF  = 1E-6
+ISMEAR = 0
+SIGMA  = 0.1
+ALGO   = Fast
+LREAL  = Auto
+ISYM = 0
+
+LCLIMB = .TRUE.
+IMAGES = 1
+SPRING = -10 # default -5.0
+
+EDIFFG = -0.03
+IBRION = 1
+POTIM  = 0.2
+NSW    = 200
+
+LDIPOL = .TRUE.
+IDIPOL = 3
+
+LCHARG = .FALSE.
+LWAVE  = .FALSE.
+
+#VDW parameters:
+IVDW   = 11
+
+NCORE = 4
+
